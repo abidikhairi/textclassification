@@ -1,5 +1,6 @@
 import os
 import argparse
+import torch
 import json
 from nltk.tokenize import word_tokenize
 from datasets import load_dataset
@@ -35,12 +36,16 @@ def build_vocab(dataset, path):
             return vocab
     vocab = {}
     for data in dataset:
-        for sentence in data['text']:
-            tokens = word_tokenize(sentence)
-            import pdb; pdb.set_trace()
-            for word in tokens:
-                if word not in vocab:
-                    vocab[word] = len(vocab)
+        tokens = word_tokenize(data['text'])
+        for word in tokens:
+            if word not in vocab:
+                vocab[word] = len(vocab)
     with open(path, 'w') as f:
         json.dump(vocab, f)
     return vocab
+
+
+def text2sequence(text, word2idx, padding_idx):
+    tokens = word_tokenize(text)
+    seq = [word2idx[word] if word in word2idx else padding_idx for word in tokens]
+    return torch.tensor(seq, dtype=torch.long)
