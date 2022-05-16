@@ -10,7 +10,7 @@ def create_default_parser():
     parser = argparse.ArgumentParser(description='Train text classification model')
     
     parser.add_argument('--dataset', type=str, default='imdb', choices=['imdb', 'ag_news', 'yelp_review_full']) # imdb, yelp, ag_news
-    parser.add_argument('--model', type=str, default='rnn') # rnn, lstm, gru
+    parser.add_argument('--model', type=str, default='rnn') # rnn, lstm, gru, rnn-native
     parser.add_argument('-embedding-dim', type=int, default=300)
     parser.add_argument('--hidden-dim', type=int, default=300)
     parser.add_argument('--num-layers', type=int, default=1)
@@ -24,8 +24,10 @@ def create_default_parser():
 
 def load_data(name, split='train'):
     if name == 'imdb':
-        return load_dataset('imdb', 'plain_text', split=split)
-    dataset = load_dataset(name, 'default', split)
+        return load_dataset('imdb', 'plain_text', split=split), 2
+    elif name == 'ag_news':
+        dataset = load_dataset(name, 'default', split)
+        return dataset, 4
     return dataset
 
 
