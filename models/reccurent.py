@@ -47,13 +47,29 @@ class LSTMModel(BaseModel):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        embedding_dim = kwargs['embedding_dim']
-        hidden_dim = kwargs['hidden_dim']
+        self.embedding_dim = kwargs['embedding_dim']
+        self.hidden_dim = kwargs['hidden_dim']
 
-        self.rnn = nn.LSTM(embedding_dim, hidden_dim)
+        self.reccurent_layer = nn.LSTM(self.embedding_dim, self.hidden_dim)
 
     def forward(self, seq):
-        return super().forward(seq)
+        word_embeds = self.word_embeddings(seq) # shape (L, Hin)
+        hidden = self.init_hidden()
+        
+        # out shape (L, Hout), hidden shape ((1, Hout), (1, Hout))
+        out, _ = self.reccurent_layer(word_embeds, hidden)
+        # use \hat{y}_T to make predictions
+        inp = out[-1].view(1, -1)
+        out = self.fc(inp)
+
+        return self.softmax(out)
+    
+    def init_hidden(self):
+        h_0 = th.zeros(1, self.hidden_dim, device=th.device('cuda' if th.cuda.is_available() else 'cpu'))
+        c_0 = th.zeros(1, self.hidden_dim, device=th.device('cuda' if th.cuda.is_available() else 'cpu'))
+
+        return (h_0, c_0)
+
 
 class GRUModel(BaseModel):
     def __init__(self, **kwargs) -> None:
@@ -62,7 +78,7 @@ class GRUModel(BaseModel):
         embedding_dim = kwargs['embedding_dim']
         hidden_dim = kwargs['hidden_dim']
 
-        self.rnn = nn.GRU(embedding_dim, hidden_dim)
+        self.reccurent_layer = nn.GRU(embedding_dim, hidden_dim)
 
     def forward(self, seq):
         return super().forward(seq)
