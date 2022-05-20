@@ -4,6 +4,8 @@ import torch
 import json
 from nltk.tokenize import word_tokenize
 from datasets import load_dataset
+from models.reccurent import RNNModel, LSTMModel, GRUModel
+from models.native import RNNNativeModel
 
 
 def create_default_parser():
@@ -11,7 +13,7 @@ def create_default_parser():
     
     parser.add_argument('--dataset', type=str, default='imdb', choices=['imdb', 'ag_news', 'yelp_review_full']) # imdb, yelp, ag_news
     parser.add_argument('--model', type=str, default='rnn') # rnn, lstm, gru, rnn-native
-    parser.add_argument('-embedding-dim', type=int, default=300)
+    parser.add_argument('--embedding-dim', type=int, default=300)
     parser.add_argument('--hidden-dim', type=int, default=300)
     parser.add_argument('--num-layers', type=int, default=1)
     parser.add_argument('--dropout', type=float, default=0.5) 
@@ -51,3 +53,24 @@ def text2sequence(text, word2idx, padding_idx):
     tokens = word_tokenize(text)
     seq = [word2idx[word] if word in word2idx else padding_idx for word in tokens]
     return torch.tensor(seq, dtype=torch.long)
+
+def init_model(**kwargs):
+    model_name = kwargs.pop('model')
+    model_class = None
+    model = None 
+
+    if model == 'rnn':
+        model = RNNModel(**kwargs)
+        model_class = RNNModel
+    elif model_name == 'rnn-native':
+        model = RNNNativeModel(**kwargs)
+    elif model_name == 'lstm':
+        model = LSTMModel(**kwargs)
+        model_class = LSTMModel
+    elif model_name == 'gru':
+        model = GRUModel(**kwargs)
+        model_class = GRUModel
+    else:
+        raise ValueError('Unknown model: {}'.format(model_name))
+    
+    return model_name, model_class, model
