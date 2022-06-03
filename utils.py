@@ -6,6 +6,7 @@ from nltk.tokenize import word_tokenize
 from datasets import load_dataset
 from models.reccurent import RNNModel, LSTMModel, GRUModel
 from models.native import RNNNativeModel
+from models.cnn import CnnLstmModel
 
 
 def create_default_parser():
@@ -70,6 +71,9 @@ def init_model(**kwargs):
     elif model_name == 'gru':
         model = GRUModel(**kwargs)
         model_class = GRUModel
+    elif model_name == 'cnn':
+        model = CnnLstmModel(**kwargs)
+        model_class = CnnLstmModel
     else:
         raise ValueError('Unknown model: {}'.format(model_name))
     
