@@ -2,7 +2,7 @@ import os
 import argparse
 import torch
 import json
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, RegexpTokenizer
 from datasets import load_dataset
 from models.reccurent import RNNModel, LSTMModel, GRUModel
 from models.native import RNNNativeModel
@@ -12,8 +12,7 @@ from models.cnn import CnnLstmModel
 def create_default_parser():
     parser = argparse.ArgumentParser(description='Train text classification model')
     
-    parser.add_argument('--dataset', type=str, default='imdb', choices=['imdb', 'ag_news', 'yelp_review_full']) # imdb, yelp, ag_news
-    parser.add_argument('--model', type=str, default='rnn') # rnn, lstm, gru, rnn-native
+    parser.add_argument('--model', type=str, default='rnn') # rnn, lstm, gru, rnn-native, cnn
     parser.add_argument('--embedding-dim', type=int, default=300)
     parser.add_argument('--hidden-dim', type=int, default=300)
     parser.add_argument('--num-layers', type=int, default=1)
@@ -40,8 +39,9 @@ def build_vocab(dataset, path):
             vocab = json.load(f)
             return vocab
     vocab = {}
-    for data in dataset:
-        tokens = word_tokenize(data['text'])
+    tknzr = RegexpTokenizer(r'\w+')
+    for idx, data in dataset.iterrows():
+        tokens = tknzr.tokenize(str(data['text']))
         for word in tokens:
             if word not in vocab:
                 vocab[word] = len(vocab)

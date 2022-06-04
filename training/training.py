@@ -28,7 +28,8 @@ def train(model, optimizer, loss_fn, trainset, text2sequence, word2idx, padding_
     batch_labels = []
     batch_preds = []
         
-    for idx, row in enumerate(trainset):
+    for idx, row in trainset.iterrows():
+        import pdb; pdb.set_trace()
 
         seq = text2sequence(row['text'], word2idx, padding_idx).to(device)
         label = th.tensor(row['label']).unsqueeze(0).to(device)
@@ -69,7 +70,8 @@ def evaluate(model, loss_fn, testset, text2sequence, word2idx, padding_idx, batc
         test_labels = []
         test_preds = []
             
-        for idx, row in enumerate(testset):
+        for idx, row in testset.iterrows():
+            import pdb; pdb.set_trace()
             seq = text2sequence(row['text'], word2idx, padding_idx).to(device)
             label = th.tensor(row['label']).unsqueeze(0).to(device)
                 

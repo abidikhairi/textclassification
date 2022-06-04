@@ -1,6 +1,7 @@
 import pickle
 import logging
 import torch as th
+import pandas as pd
 from torch import nn
 from utils import create_default_parser, load_data, build_vocab, text2sequence, init_model
 from training.training import train, evaluate
@@ -13,12 +14,12 @@ logger = logging.getLogger(__name__)
 def main(args):
     device = th.device('cuda' if th.cuda.is_available() else 'cpu')
 
-    dataset, num_classes = load_data(args.dataset)
+    trainset = pd.read_csv('./data/fake-news/train.csv')
+    testset = pd.read_csv('./data/fake-news/test.csv')
     
-    trainset = dataset['train']
-    testset = dataset['test']
-    
-    word2idx = build_vocab(trainset, f'data/{args.dataset}-vocab.json')
+    dataset = 'fakenews'
+
+    word2idx = build_vocab(trainset, f'data/{dataset}-vocab.json')
     word2idx['<unk>'] = len(word2idx)
     padding_idx = word2idx['<unk>']
 
@@ -27,7 +28,7 @@ def main(args):
         'hidden_dim': args.hidden_dim,
         'vocab_size': len(word2idx),
         'padding_idx': padding_idx,
-        'num_classes': num_classes
+        'num_classes': 2
     }
     model_name, model_class, model = init_model(model=args.model, **model_parameters)
     
@@ -47,10 +48,10 @@ def main(args):
         if test_accuracy > last_accuracy:
             logger.info(f'Saving model to ./data, Test accuracy {test_accuracy*100:.4f} %')   
             
-            with open(f'data/{args.dataset}-{model_name}-hyperparameters.pkl', 'wb') as f:
+            with open(f'data/{dataset}-{model_name}-hyperparameters.pkl', 'wb') as f:
                 pickle.dump((model_class, model_parameters), f)
                 
-            th.save(model.state_dict(), f'data/{args.dataset}-{model_name}-model.pt')
+            th.save(model.state_dict(), f'data/{dataset}-{model_name}-model.pt')
             last_accuracy = test_accuracy
 
 
